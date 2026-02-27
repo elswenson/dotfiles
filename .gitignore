@@ -1,0 +1,11 @@
+# User-specific stuff
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/**/usage.statistics.xml
+.idea/**/dictionaries
+.idea/**/shelf
+claude/.claude/cache
+claude/.claude/debug
+claude/.claude/plugins
+claude/.claude/.credentials.json
+.DS_Store
