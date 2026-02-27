@@ -4,6 +4,7 @@ DIR=$(cd "$(dirname "$0")" && pwd)
 NODE_VERSION=22.18.0
 NVM_VERSION=0.39.3
 NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+VSCODE_EXTENSIONS_FILE="$DIR/vscode/extensions.txt"
 
 
 ### NVM
@@ -30,7 +31,10 @@ function setup_oh_my_zsh() {
 			echo "Oh my zsh is already installed"
 	else
 	  echo "Installing Oh My Zsh..."
-		sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+		# RUNZSH=no: do not start an interactive zsh session after install.
+		# CHSH=no: skip login-shell changes in remote environments where chsh is often unavailable or irrelevant.
+		# KEEP_ZSHRC=yes: preserve the stowed ~/.zshrc instead of writing defaults.
+		RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 	fi
 	mkdir -p ~/.zsh/completions
 	setup_oh_my_zsh_plugins
@@ -44,6 +48,21 @@ function setup_oh_my_zsh_plugins() {
 ### APT PACKAGES
 function install_apt_packages() {
 	sudo apt-get update
+}
+
+function ensure_zsh() {
+	if command -v zsh >/dev/null 2>&1; then
+		return 0
+	fi
+
+	if [[ $OSTYPE == 'linux-gnu'* ]]; then
+		sudo apt-get update
+		sudo apt-get install -y zsh
+		return 0
+	fi
+
+	echo "zsh is required but not installed"
+	return 1
 }
 
 function ensure_stow() {
@@ -65,6 +84,135 @@ function install_npm_globals() {
 	npm i -g @anthropic-ai/claude-code
 }
 
+function resolve_vscode_cli() {
+	if command -v code >/dev/null 2>&1; then
+		echo "code"
+		return 0
+	fi
+
+	if command -v code-insiders >/dev/null 2>&1; then
+		echo "code-insiders"
+		return 0
+	fi
+
+	return 1
+}
+
+function install_vscode_extensions() {
+	if [ ! -f "$VSCODE_EXTENSIONS_FILE" ]; then
+		echo "No VS Code extensions file found at $VSCODE_EXTENSIONS_FILE"
+		return 0
+	fi
+
+	local vscode_cli
+	if ! vscode_cli=$(resolve_vscode_cli); then
+		echo "VS Code CLI not found; skipping extension install"
+		return 0
+	fi
+
+	echo "Installing VS Code extensions..."
+
+	while IFS= read -r extension || [ -n "$extension" ]; do
+		case "$extension" in
+			""|\#*)
+				continue
+				;;
+		esac
+
+		if "$vscode_cli" --install-extension "$extension"; then
+			echo "Installed: $extension"
+		else
+			echo "Failed to install: $extension"
+		fi
+	done < "$VSCODE_EXTENSIONS_FILE"
+}
+
+function configure_linux_terminal_defaults() {
+	if ! command -v python3 >/dev/null 2>&1; then
+		echo "python3 not found; skipping terminal default configuration"
+		return 0
+	fi
+
+	local settings_files=(
+		"$HOME/.config/Code/User/settings.json"
+		"$HOME/.config/Cursor/User/settings.json"
+		"$HOME/.vscode-server/data/Machine/settings.json"
+		"$HOME/.cursor-server/data/Machine/settings.json"
+	)
+
+	local settings_file
+	for settings_file in "${settings_files[@]}"; do
+		mkdir -p "$(dirname "$settings_file")"
+
+		if python3 - "$settings_file" <<'PY'
+import json
+import os
+import sys
+
+path = sys.argv[1]
+data = {}
+
+if os.path.exists(path):
+    with open(path, "r", encoding="utf-8") as f:
+        raw = f.read().strip()
+
+    if raw:
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            print(f"Skipping {path}: invalid JSON ({exc})", file=sys.stderr)
+            sys.exit(1)
+
+profiles = data.get("terminal.integrated.profiles.linux")
+if not isinstance(profiles, dict):
+    profiles = {}
+
+profiles["zsh"] = {
+    "path": "zsh",
+    "args": ["-l"],
+}
+
+data["terminal.integrated.profiles.linux"] = profiles
+data["terminal.integrated.defaultProfile.linux"] = "zsh"
+
+with open(path, "w", encoding="utf-8") as f:
+    json.dump(data, f, indent=2)
+    f.write("\n")
+PY
+		then
+			echo "Configured terminal defaults in $settings_file"
+		else
+			echo "Skipped terminal defaults for $settings_file"
+		fi
+	done
+}
+
+function apply_random_peacock_profile() {
+	local peacock_script
+	peacock_script="$HOME/.zsh/peacock.sh"
+
+	if [ ! -f "$peacock_script" ]; then
+		echo "Peacock script not found at $peacock_script; skipping profile apply"
+		return 0
+	fi
+
+	# shellcheck disable=SC1090
+	source "$peacock_script"
+
+	if ! command -v peacock_apply_random_profile >/dev/null 2>&1; then
+		echo "Peacock random-profile helper not found; skipping profile apply"
+		return 0
+	fi
+
+	echo "Applying random Peacock profile..."
+	if peacock_apply_random_profile; then
+		return 0
+	fi
+
+	echo "Failed to apply random Peacock profile"
+	return 0
+}
+
 if [ ! -s "$NVM_DIR/nvm.sh" ]; then
 	PROFILE=/dev/null bash -c "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v$NVM_VERSION/install.sh | bash"
 fi
@@ -76,6 +224,7 @@ load_nvm
 
 echo "Symlinking dotfiles..."
 ensure_stow
+ensure_zsh
 
 # if ~/.zshrc exists, delete it
 if [ -f ~/.zshrc ]; then
@@ -85,6 +234,10 @@ fi
 # Run stow to symlink dotfiles
 bash "$DIR/stow.sh"
 setup_oh_my_zsh
+configure_linux_terminal_defaults
+apply_random_peacock_profile
+# Intentionally not using chsh here: remote execution environments commonly do not support
+# persistent login-shell changes, and terminal defaults are configured above via editor settings.
 
 
 echo "Installing node..."
@@ -96,6 +249,8 @@ nvm alias default "$NODE_VERSION"
 echo "Installing npm globals..."
 
 install_npm_globals
+
+install_vscode_extensions
 
 
 echo "Done!"

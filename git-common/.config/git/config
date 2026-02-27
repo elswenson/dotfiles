@@ -1,1 +1,4 @@
 # Shared git config managed by stow.
+[init]
+  defaultBranch = 'main'
+  autoSetupRemote = true

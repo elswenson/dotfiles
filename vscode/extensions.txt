@@ -1,0 +1,18 @@
+# One extension ID per line.
+# Comment lines start with '#'.
+#
+# Examples:
+# dbaeumer.vscode-eslint
+# esbenp.prettier-vscode
+
+# Agentic tools
+Anthropic.claude-code
+openai.chatgpt
+
+# Git
+mhutchie.git-graph
+
+# Code style
+
+# Visual style
+johnpapa.vscode-peacock
