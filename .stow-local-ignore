@@ -2,3 +2,4 @@ bin
 docs
 README.md
 install
+\.vscode/settings\.json
