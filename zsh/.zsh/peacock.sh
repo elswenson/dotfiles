@@ -2,18 +2,14 @@ function peacock_profiles_dir() {
   echo "${PEACOCK_PROFILES_DIR:-$HOME/.zsh/peacock/profiles}"
 }
 
-function peacock_settings_file() {
-  echo "${PEACOCK_SETTINGS_FILE:-$HOME/.config/Code/User/settings.json}"
-}
-
 function peacock_settings_files() {
   local settings_file
   local emitted_any=0
   local candidates=(
-    "$HOME/.config/Code/User/settings.json"
     "$HOME/.config/Cursor/User/settings.json"
-    "$HOME/.vscode-server/data/Machine/settings.json"
     "$HOME/.cursor-server/data/Machine/settings.json"
+    "$HOME/.config/Code/User/settings.json"
+    "$HOME/.vscode-server/data/Machine/settings.json"
   )
 
   if [ -n "$PEACOCK_SETTINGS_FILE" ]; then
@@ -35,7 +31,8 @@ function peacock_settings_files() {
   done
 
   if [ "$emitted_any" -eq 0 ]; then
-    echo "$(peacock_settings_file)"
+    echo "$HOME/.config/Cursor/User/settings.json"
+    echo "$HOME/.config/Code/User/settings.json"
   fi
 }
 

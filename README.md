@@ -31,8 +31,8 @@ Run:
 - Run `peacock-apply <profile-name>` to apply a profile.
 - Run `peacock` to pick a random profile and apply it.
 - Profile colors merge into `workbench.colorCustomizations` without removing unrelated keys.
-- `peacock-apply` updates detected settings files for VS Code/Cursor local and remote sessions.
-- Set `PEACOCK_SETTINGS_FILE` to target a single settings path explicitly.
+- `peacock-apply` targets both Cursor/VS Code user settings and detected remote machine settings by default.
+- Set `PEACOCK_SETTINGS_FILE` to target a single explicit settings path instead.
 - `./install` applies one random Peacock profile after dotfiles are stowed.
 
 ## Zsh aliases
