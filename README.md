@@ -12,7 +12,6 @@ Run:
 
 - Dotfiles are symlinked into `$HOME` via GNU Stow.
 - Current stow packages include `agents/`, `git-common/`, and `zsh/`.
-- Linux also stows `vscode-user/` to `~/.config/Code/User/settings.json`.
 
 ## VS Code extensions
 
@@ -31,7 +30,7 @@ Run:
 - Run `peacock-apply <profile-name>` to apply a profile.
 - Run `peacock` to pick a random profile and apply it.
 - Profile colors merge into `workbench.colorCustomizations` without removing unrelated keys.
-- `peacock-apply` targets both Cursor/VS Code user settings and detected remote machine settings by default.
+- `peacock-apply` targets detected remote machine settings only (`~/.cursor-server/data/Machine/settings.json` and `~/.vscode-server/data/Machine/settings.json`) by default.
 - Set `PEACOCK_SETTINGS_FILE` to target a single explicit settings path instead.
 - `./install` applies one random Peacock profile after dotfiles are stowed.
 

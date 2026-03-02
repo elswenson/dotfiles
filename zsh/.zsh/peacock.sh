@@ -6,9 +6,7 @@ function peacock_settings_files() {
   local settings_file
   local emitted_any=0
   local candidates=(
-    "$HOME/.config/Cursor/User/settings.json"
     "$HOME/.cursor-server/data/Machine/settings.json"
-    "$HOME/.config/Code/User/settings.json"
     "$HOME/.vscode-server/data/Machine/settings.json"
   )
 
@@ -31,8 +29,8 @@ function peacock_settings_files() {
   done
 
   if [ "$emitted_any" -eq 0 ]; then
-    echo "$HOME/.config/Cursor/User/settings.json"
-    echo "$HOME/.config/Code/User/settings.json"
+    echo "$HOME/.cursor-server/data/Machine/settings.json"
+    echo "$HOME/.vscode-server/data/Machine/settings.json"
   fi
 }
 
