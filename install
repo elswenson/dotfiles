@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 DIR=$(cd "$(dirname "$0")" && pwd)
-NODE_VERSION=22.18.0
 NVM_VERSION=0.39.3
 NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
 VSCODE_EXTENSIONS_FILE="$DIR/vscode/extensions.txt"
@@ -82,6 +81,26 @@ function ensure_stow() {
 
 function install_npm_globals() {
 	npm i -g @anthropic-ai/claude-code
+}
+
+function use_nvm_default_node() {
+	if ! command -v nvm >/dev/null 2>&1; then
+		echo "nvm command not found after load_nvm"
+		return 1
+	fi
+
+	if ! nvm install default; then
+		echo "Could not install nvm default alias."
+		echo "Configure one with: nvm alias default <version>"
+		return 1
+	fi
+
+	if ! nvm use default; then
+		echo "Could not activate nvm default alias."
+		return 1
+	fi
+
+	return 0
 }
 
 function resolve_vscode_cli() {
@@ -233,6 +252,7 @@ fi
 
 # Run stow to symlink dotfiles
 bash "$DIR/stow.sh"
+bash "$DIR/place.sh"
 setup_oh_my_zsh
 configure_linux_terminal_defaults
 apply_random_peacock_profile
@@ -240,10 +260,11 @@ apply_random_peacock_profile
 # persistent login-shell changes, and terminal defaults are configured above via editor settings.
 
 
-echo "Installing node..."
-
-nvm install "$NODE_VERSION"
-nvm alias default "$NODE_VERSION"
+echo "Using nvm default node..."
+if ! use_nvm_default_node; then
+	echo "Node setup failed"
+	exit 1
+fi
 
 
 echo "Installing npm globals..."

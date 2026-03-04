@@ -12,6 +12,7 @@ Run:
 
 - Dotfiles are symlinked into `$HOME` via GNU Stow.
 - Current stow packages include `agents/`, `git-common/`, and `zsh/`.
+- `agents/.claude` is intentionally copied as regular files via `place.sh` (not symlinked) so environment-specific scripts can safely update `~/.claude/settings.json`.
 
 ## VS Code extensions
 
@@ -22,7 +23,7 @@ Run:
 ## Editor settings and Peacock profiles
 
 - Edit `vscode-user/.config/Code/User/settings.json` for personal global settings.
-- Apply with `bash ./stow.sh` (or run `./install`).
+- Apply with `bash ./stow.sh` and `bash ./place.sh` (or run `./install`).
 - This does not modify tracked per-repo `.vscode/settings.json` files.
 - Peacock profile presets live in `zsh/.zsh/peacock/profiles/*.json`.
 - Each profile JSON should define `workbench.colorCustomizations`; `peacock.remoteColor` is optional.
@@ -38,7 +39,7 @@ Run:
 
 - Add shared aliases to `zsh/.zsh/aliases.zsh`.
 - Add grouped alias files under `zsh/.zsh/aliases.d/*.zsh`.
-- Run `./install` (or `bash ./stow.sh`) to link updates into `$HOME`.
+- Run `./install` (or `bash ./stow.sh` plus `bash ./place.sh`) to apply updates into `$HOME`.
 
 ## Lint helpers
 
