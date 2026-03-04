@@ -83,24 +83,13 @@ function install_npm_globals() {
 	npm i -g @anthropic-ai/claude-code
 }
 
-function use_nvm_default_node() {
-	if ! command -v nvm >/dev/null 2>&1; then
-		echo "nvm command not found after load_nvm"
-		return 1
+function has_npm() {
+	if command -v npm >/dev/null 2>&1; then
+		return 0
 	fi
 
-	if ! nvm install default; then
-		echo "Could not install nvm default alias."
-		echo "Configure one with: nvm alias default <version>"
-		return 1
-	fi
-
-	if ! nvm use default; then
-		echo "Could not activate nvm default alias."
-		return 1
-	fi
-
-	return 0
+	echo "npm not found in PATH; skipping npm globals install"
+	return 1
 }
 
 function resolve_vscode_cli() {
@@ -260,16 +249,13 @@ apply_random_peacock_profile
 # persistent login-shell changes, and terminal defaults are configured above via editor settings.
 
 
-echo "Using nvm default node..."
-if ! use_nvm_default_node; then
-	echo "Node setup failed"
-	exit 1
-fi
+echo "Using existing node setup (no nvm alias changes)..."
 
 
 echo "Installing npm globals..."
-
-install_npm_globals
+if has_npm; then
+	install_npm_globals
+fi
 
 install_vscode_extensions
 
