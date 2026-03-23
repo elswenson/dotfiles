@@ -16,3 +16,4 @@ alias peacock='peacock_apply_random_profile'
 alias peacock-list='peacock_list_profiles'
 alias peacock-apply='peacock_apply_profile'
 
+alias claude-skip='claude --dangerously-skip-permissions'
