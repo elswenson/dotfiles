@@ -1,3 +1,6 @@
+# Ona (remote execution environment) secrets are sourced automatically in bash but not other shells
+[ -f /etc/profile.d/ona-secrets.sh ] && . /etc/profile.d/ona-secrets.sh
+
 export ZSH="$HOME/.oh-my-zsh"
 
 ZSH_THEME="robbyrussell"
